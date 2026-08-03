@@ -1,20 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { fetchProperties } from '../api/client';
 import './ListingsPage.css';
+import PropertyFilters from '../components/PropertyFilters';
 
 function ListingsPage() {
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [total, setTotal] = useState(0)
+
+
+     function handleSearch(filters) {
+     loadProperties(filters);
+   }
 
     useEffect(() => { loadProperties(); }, []);
 
-    async function loadProperties() {
+    async function loadProperties(filters = {}) {
         try {
             setLoading(true);
             setError(null);
-            const data = await fetchProperties();
+            const data = await fetchProperties(filters);
             setProperties(data.results);
+            setTotal(data.total);
         } catch (error) {
             setError('Failed to load properties');
         } finally {
@@ -30,7 +38,8 @@ function ListingsPage() {
     return(
         <div className="listings-page">
             <h1>Property Listings</h1>
-            <p>Total Properties: {properties.length}</p>
+            <PropertyFilters onSearch={handleSearch} />
+            <p>Showing: {properties.length} of {total} Properties</p>
             <div className="property-grid">
                 {properties.map((property) => (
                     <PropertyCard key={property.L_ListingID} property={property} />
