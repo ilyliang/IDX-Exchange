@@ -85,7 +85,7 @@ router.get('/', async (req, res) => {
       : "";
    
 
-    const countQuery = `SELECT COUNT(*) as total FROM rets_property ${whereClause}`;
+    const countQuery = `SELECT COUNT(DISTINCT L_ListingID) as total FROM rets_property ${whereClause}`;
     const [countResult] = await pool.query(countQuery, values);
     const total = countResult[0].total;
 

@@ -2,25 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { fetchProperties } from '../api/client';
 import './ListingsPage.css';
 import PropertyFilters from '../components/PropertyFilters';
+import Pagination from '../components/Pagination';
+import {useNavigate} from 'react-router-dom';
 
 function ListingsPage() {
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [total, setTotal] = useState(0)
+    const [total, setTotal] = useState(0);
+    const [filters, setFilters] = useState({});
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(20);
+
 
 
      function handleSearch(filters) {
-     loadProperties(filters);
+     setFilters(filters);
+     setCurrentPage(1);
    }
+    function handlePageChange(page){
+      setCurrentPage(page);
+      window.scrollTo(0,0);
+    }
 
-    useEffect(() => { loadProperties(); }, []);
+    const totalPages = Math.ceil (total/itemsPerPage);
 
-    async function loadProperties(filters = {}) {
+    useEffect(() => { loadProperties(); }, [currentPage,filters]);
+
+    async function loadProperties() {
         try {
             setLoading(true);
             setError(null);
-            const data = await fetchProperties(filters);
+            const offset = (currentPage - 1) * itemsPerPage;
+            const params = {...filters, limit: itemsPerPage, offset};
+            const data = await fetchProperties(params);
             setProperties(data.results);
             setTotal(data.total);
         } catch (error) {
@@ -38,19 +53,32 @@ function ListingsPage() {
     return(
         <div className="listings-page">
             <h1>Property Listings</h1>
-            <PropertyFilters onSearch={handleSearch} />
+            <PropertyFilters onSearch={handleSearch}/>
             <p>Showing: {properties.length} of {total} Properties</p>
             <div className="property-grid">
                 {properties.map((property) => (
                     <PropertyCard key={property.L_ListingID} property={property} />
                 ))}
+            
             </div>
+             <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
+
         </div>
     );
 
 }
 function PropertyCard({ property }) {
     let photo = "";
+    const navigate = useNavigate();
+
+    function handleClick() {
+      navigate(`/property/${property.L_ListingID}`);
+    }
+
     try {
     const photos = JSON.parse(property.L_Photos || "[]");
 
@@ -61,7 +89,7 @@ function PropertyCard({ property }) {
     photo = "";
   }
   return (
-    <div className="property-card">
+    <div className="property-card" onClick={handleClick}>
       <div className="property-image">
         <img
           src={photo}

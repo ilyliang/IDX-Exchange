@@ -1,0 +1,15 @@
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+}
+
+.btn-back{
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-back:hover{
+    background-color: #d4d4d4;
+}
